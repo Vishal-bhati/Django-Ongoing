@@ -36,3 +36,6 @@ class UserBook(models.Model):
         self.current_page = page
         self.status = "finished" if page >0 else "reading"
         self.save()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.book.title} ({self.status})"
