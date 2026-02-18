@@ -1,0 +1,35 @@
+<h1>Search Books</h1>
+
+<form method="get">
+  <input
+    type="text"
+    name="q"
+    placeholder="Search books..."
+    value="{{ query|default:'' }}"
+    required
+  />
+  <button type="submit">Search</button>
+</form>
+
+<hr />
+
+{% if results %}
+  <ul>
+    {% for item in results %}
+      <li>
+        <strong>{{ item.volumeInfo.title }}</strong>
+        <br />
+        {{ item.volumeInfo.authors|join:", " }}
+
+        <form method="post" action="{% url 'save-book' %}">
+            {% csrf_token %}
+            <input type="hidden" name="google_book_id" value="{{ item.id }}">
+            <button type="submit">Save</button>
+        </form>
+
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<a href="{% url 'library' %}">Back to Library</a>

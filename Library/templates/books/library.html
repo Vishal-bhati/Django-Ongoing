@@ -1,2 +1,21 @@
 <h1>My Library</h1>
-<p>If you see this, redirect works.</p>
+
+<h2>Currently Reading</h2>
+<ul>
+  {% for book in reading %}
+    <li>{{ book.title }} — page {{ book.current_page }}</li>
+  {% empty %}
+    <li>No books currently being read.</li>
+  {% endfor %}
+</ul>
+
+<h2>Finished</h2>
+<ul>
+  {% for book in finished %}
+    <li>{{ book.title }}</li>
+  {% empty %}
+    <li>No finished books yet.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'logout' %}">Logout</a>
