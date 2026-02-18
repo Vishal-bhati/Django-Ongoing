@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 from books.services.google_books import search_books, save_book
 from books.models import UserBook
@@ -27,7 +28,7 @@ class BookSearchAPIView(APIView):
 
 
 class BookSaveAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         item = request.data.get("item")
@@ -53,17 +54,19 @@ class BookSaveAPIView(APIView):
         )
     
 class MyLibraryAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = User.objects.first()  # For demo purposes, we use the first user
+        user = request.user
 
         reading = currently_reading(user)
         finsished = recently_finished(user) 
 
         return Response({
+            "username": user.username,
             "reading": [
                 {
+                    "id": ub.id,
                     "title": ub.book.title,
                     "current_page": ub.current_page,
                 }
@@ -71,9 +74,40 @@ class MyLibraryAPIView(APIView):
             ],
             "finished": [
                 {
+                    "id": ub.id,
                     "title": ub.book.title,
                     "finished_at": ub.last_updated,
                 }
                 for ub in finsished
             ]
+        })
+    
+class UpdateProgressAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        book_id = request.data.get("book_id")
+        current_page = request.data.get("current_page")
+
+        if book_id is None or current_page is None:
+            return Response(
+                {"error": "Book ID and current page are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user = request.user
+
+        user_book = get_object_or_404(
+            UserBook,  
+            user=user,
+            book_id=book_id
+        )
+
+        user_book.update_progress(int(current_page))
+
+        return Response({
+            "message": "Progress updated",
+            "book_title": user_book.book.title,
+            "current_page": user_book.current_page,
+            "status": user_book.status,
+            "last_updated": user_book.last_updated,
         })
