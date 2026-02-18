@@ -1,21 +1,86 @@
-<h1>My Library</h1>
+{% extends "base.html" %}
+{% block title %}My Library{% endblock %}
 
-<h2>Currently Reading</h2>
-<ul>
-  {% for book in reading %}
-    <li>{{ book.title }} — page {{ book.current_page }}</li>
-  {% empty %}
-    <li>No books currently being read.</li>
-  {% endfor %}
-</ul>
+{% block content %}
+<h2 class="mb-4">My Library</h2>
 
-<h2>Finished</h2>
-<ul>
-  {% for book in finished %}
-    <li>{{ book.title }}</li>
-  {% empty %}
-    <li>No finished books yet.</li>
-  {% endfor %}
-</ul>
+<div class="row">
+  <!-- Currently Reading -->
+  <div class="col-md-6">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-primary text-white">
+        Currently Reading
+      </div>
 
-<a href="{% url 'logout' %}">Logout</a>
+      <ul class="list-group list-group-flush">
+        {% for book in reading %}
+          <li class="list-group-item">
+            <strong>{{ book.title }}</strong> 
+              - Page {{ book.current_page }} of {{ book.total_pages }}
+
+            <form
+              method="post"
+              action="{% url 'update-progress' %}"
+              class="d-flex gap-2 mt-2"
+            >
+              {% csrf_token %}
+              <input type="hidden" name="book_id" value="{{ book.book_id }}">
+
+              <input
+                type="number"
+                name="current_page"
+                class="form-control form-control-sm"
+                value="{{ book.current_page }}"
+                min="0"
+                required
+              >
+
+              <button class="btn btn-sm btn-outline-primary">
+                Update
+              </button>
+            </form>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">
+            No books currently reading.
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Finished -->
+  <div class="col-md-6">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-success text-white">
+        Finished
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for book in finished %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <strong>{{ book.title }}</strong>
+
+            <form
+              method="post"
+              action="{% url 'update-progress' %}"
+            >
+              {% csrf_token %}
+              <input type="hidden" name="book_id" value="{{ book.book_id }}">
+              <input type="hidden" name="current_page" value="1">
+
+              <button class="btn btn-sm btn-outline-secondary">
+                Move to Reading
+              </button>
+            </form>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">
+            No finished books yet.
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

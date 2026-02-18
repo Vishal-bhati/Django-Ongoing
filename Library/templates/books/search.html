@@ -1,35 +1,38 @@
-<h1>Search Books</h1>
+{% extends "base.html" %}
+{% block title %}Search Books{% endblock %}
 
-<form method="get">
-  <input
-    type="text"
-    name="q"
-    placeholder="Search books..."
-    value="{{ query|default:'' }}"
-    required
-  />
-  <button type="submit">Search</button>
+{% block content %}
+<h2 class="mb-3">Search Books</h2>
+
+<form method="get" class="mb-4">
+  <div class="input-group">
+    <input
+      class="form-control"
+      name="q"
+      placeholder="Search books..."
+      value="{{ query|default:'' }}"
+      required
+    >
+    <button class="btn btn-primary">Search</button>
+  </div>
 </form>
 
-<hr />
-
 {% if results %}
-  <ul>
+  <div class="list-group">
     {% for item in results %}
-      <li>
-        <strong>{{ item.volumeInfo.title }}</strong>
-        <br />
-        {{ item.volumeInfo.authors|join:", " }}
+      <div class="list-group-item">
+        <h5>{{ item.volumeInfo.title }}</h5>
+        <p class="mb-2 text-muted">
+          {{ item.volumeInfo.authors|join:", " }}
+        </p>
 
         <form method="post" action="{% url 'save-book' %}">
-            {% csrf_token %}
-            <input type="hidden" name="google_book_id" value="{{ item.id }}">
-            <button type="submit">Save</button>
+          {% csrf_token %}
+          <input type="hidden" name="google_book_id" value="{{ item.id }}">
+          <button class="btn btn-sm btn-success">Save</button>
         </form>
-
-      </li>
+      </div>
     {% endfor %}
-  </ul>
+  </div>
 {% endif %}
-
-<a href="{% url 'library' %}">Back to Library</a>
+{% endblock %}
